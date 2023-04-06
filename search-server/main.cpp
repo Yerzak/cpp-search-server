@@ -78,41 +78,38 @@ public:
     }
 
     vector<Document> FindTopDocuments(const string& raw_query) const {
-        return FindTopDocuments(raw_query, [](auto, auto status, auto) {
-            return status == DocumentStatus::ACTUAL;
-            });
+        return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
     }
 
     vector<Document> FindTopDocuments(const string& raw_query, DocumentStatus status) const {
-        if (status == DocumentStatus::ACTUAL) {
+        switch (status) {
+        case DocumentStatus::ACTUAL:
             return FindTopDocuments(raw_query, [](auto, auto status, auto) {
                 return status == DocumentStatus::ACTUAL;
                 });
-        }
-        else if (status == DocumentStatus::IRRELEVANT) {
+        case DocumentStatus::IRRELEVANT:
             return FindTopDocuments(raw_query, [](auto, auto status, auto) {
                 return status == DocumentStatus::IRRELEVANT;
                 });
-        }
-        else if (status == DocumentStatus::BANNED) {
+        case DocumentStatus::BANNED:
             return FindTopDocuments(raw_query, [](auto, auto status, auto) {
                 return status == DocumentStatus::BANNED;
                 });
-        }
-        else {
-            return FindTopDocuments(raw_query, [](auto, auto status, auto) {
-                return status == DocumentStatus::REMOVED;
-                });
+        default: return FindTopDocuments(raw_query, [](auto, auto status, auto) {
+            return status == DocumentStatus::REMOVED;
+            });
         }
     }
-    template <typename T>
-    vector<Document> FindTopDocuments(const string& raw_query, T predicate) const {
+
+    template <typename Predicate>
+    vector<Document> FindTopDocuments(const string& raw_query, Predicate predicate) const {
         const Query query = ParseQuery(raw_query);
         auto matched_documents = FindAllDocuments(query, predicate);
 
         sort(matched_documents.begin(), matched_documents.end(),
             [](const Document& lhs, const Document& rhs) {
-                if (abs(lhs.relevance - rhs.relevance) < 1e-6) {
+                const auto min_difference = 1e-6;
+                if (abs(lhs.relevance - rhs.relevance) < min_difference) {
                     return lhs.rating > rhs.rating;
                 }
                 else {
@@ -229,18 +226,21 @@ private:
     double ComputeWordInverseDocumentFreq(const string& word) const {
         return log(GetDocumentCount() * 1.0 / word_to_document_freqs_.at(word).size());
     }
-    template <typename T>
-    vector<Document> FindAllDocuments(const Query& query, T predicate) const {
+
+    template <typename Predicate>
+    vector<Document> FindAllDocuments(const Query& query, Predicate predicate) const {
         map<int, double> document_to_relevance;
+        vector<Document> matched_documents;
         for (const string& word : query.plus_words) {
             if (word_to_document_freqs_.count(word) == 0) {
                 continue;
             }
             const double inverse_document_freq = ComputeWordInverseDocumentFreq(word);
             for (const auto [document_id, term_freq] : word_to_document_freqs_.at(word)) {
-
-                document_to_relevance[document_id] += term_freq * inverse_document_freq;
-
+                const auto& document = documents_.at(document_id);
+                if (predicate(document_id, document.status, document.rating)) {
+                    document_to_relevance[document_id] += term_freq * inverse_document_freq;
+                }
             }
         }
 
@@ -253,17 +253,15 @@ private:
             }
         }
 
-        vector<Document> matched_documents;
         for (const auto [document_id, relevance] : document_to_relevance) {
             const auto& document = documents_.at(document_id);
-            if (predicate(document_id, document.status, document.rating)) {
-
-                matched_documents.push_back({ document_id, relevance, document.rating });
-            }
+            matched_documents.push_back({ document_id, relevance, document.rating });
         }
         return matched_documents;
     }
 };
+
+
 
 // ==================== для примера =========================
 
@@ -277,13 +275,16 @@ void PrintDocument(const Document& document) {
 int main() {
     SearchServer search_server;
     search_server.SetStopWords("и в на"s);
-
     search_server.AddDocument(0, "белый кот и модный ошейник"s, DocumentStatus::ACTUAL, { 8, -3 });
     search_server.AddDocument(1, "пушистый кот пушистый хвост"s, DocumentStatus::ACTUAL, { 7, 2, 7 });
-    search_server.AddDocument(2, "ухоженный пёс выразительные глаза"s, DocumentStatus::ACTUAL,
-        { 5, -12, 2, 1 });
-
-    for (const Document& document : search_server.FindTopDocuments("ухоженный кот"s)) {
+    search_server.AddDocument(2, "ухоженный пёс выразительные глаза"s, DocumentStatus::ACTUAL, { 5, -12, 2, 1 });
+    search_server.AddDocument(3, "ухоженный скворец евгений"s, DocumentStatus::BANNED, { 9 });
+    cout << "ACTUAL by default:"s << endl;
+    for (const Document& document : search_server.FindTopDocuments("пушистый ухоженный кот"s)) {
+        PrintDocument(document);
+    }
+    cout << "BANNED:"s << endl;
+    for (const Document& document : search_server.FindTopDocuments("пушистый ухоженный кот"s, DocumentStatus::BANNED)) {
         PrintDocument(document);
     }
     cout << "Even ids:"s << endl;
