@@ -82,23 +82,9 @@ public:
     }
 
     vector<Document> FindTopDocuments(const string& raw_query, DocumentStatus status) const {
-        switch (status) {
-        case DocumentStatus::ACTUAL:
-            return FindTopDocuments(raw_query, [](auto, auto status, auto) {
-                return status == DocumentStatus::ACTUAL;
-                });
-        case DocumentStatus::IRRELEVANT:
-            return FindTopDocuments(raw_query, [](auto, auto status, auto) {
-                return status == DocumentStatus::IRRELEVANT;
-                });
-        case DocumentStatus::BANNED:
-            return FindTopDocuments(raw_query, [](auto, auto status, auto) {
-                return status == DocumentStatus::BANNED;
-                });
-        default: return FindTopDocuments(raw_query, [](auto, auto status, auto) {
-            return status == DocumentStatus::REMOVED;
+        return FindTopDocuments(raw_query, [status](auto, auto s, auto) {
+            return s == status;
             });
-        }
     }
 
     template <typename Predicate>
