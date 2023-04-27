@@ -251,12 +251,10 @@ private:
     struct Query {
         set<string> plus_words;
         set<string> minus_words;
-        bool is_second_minus;
     };
 
     Query ParseQuery(const string& text) const {
         Query query;
-        query.is_second_minus = false;
         for (const string& word : SplitIntoWords(text)) {
             const QueryWord query_word = ParseQueryWord(word);
             if (!query_word.is_stop) {
