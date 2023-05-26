@@ -3,8 +3,7 @@
 void SearchServer::AddDocument(int document_id, const std::string& document, DocumentStatus status,
     const std::vector<int>& ratings) {
     if ((document_id < 0) || (documents_.count(document_id) > 0)) {
-        using namespace std;
-        throw invalid_argument("Invalid document_id"s);
+        throw std::invalid_argument(std::string("Invalid document_id"));
     }
     const auto words = SplitIntoWordsNoStop(document);
 
@@ -38,7 +37,6 @@ int SearchServer::GetDocumentId(int index) const {
 std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument(const std::string& raw_query,
     int document_id) const {
     const auto query = ParseQuery(raw_query);
-
     std::vector<std::string> matched_words;
     for (const std::string& word : query.plus_words) {
         if (word_to_document_freqs_.count(word) == 0) {
@@ -75,8 +73,7 @@ std::vector<std::string> SearchServer::SplitIntoWordsNoStop(const std::string& t
     std::vector<std::string> words;
     for (const std::string& word : SplitIntoWords(text)) {
         if (!IsValidWord(word)) {
-            using namespace std;
-            throw invalid_argument("Word "s + word + " is invalid"s);
+            throw std::invalid_argument(std::string("Word ") + word + std::string(" is invalid"));
         }
         if (!IsStopWord(word)) {
             words.push_back(word);
@@ -98,8 +95,7 @@ int SearchServer::ComputeAverageRating(const std::vector<int>& ratings) {
 
 SearchServer::QueryWord SearchServer::ParseQueryWord(const std::string& text) const {
     if (text.empty()) {
-        using namespace std;
-        throw invalid_argument("Query word is empty"s);
+        throw std::invalid_argument(std::string("Query word is empty"));
     }
     std::string word = text;
     bool is_minus = false;
@@ -108,10 +104,8 @@ SearchServer::QueryWord SearchServer::ParseQueryWord(const std::string& text) co
         word = word.substr(1);
     }
     if (word.empty() || word[0] == '-' || !IsValidWord(word)) {
-        using namespace std;
-        throw invalid_argument("Query word "s + text + " is invalid");
+        throw std::invalid_argument(std::string("Query word ") + text + std::string(" is invalid"));
     }
-
     return { word, is_minus, IsStopWord(word) };
 }
 
