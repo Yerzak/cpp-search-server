@@ -2,11 +2,7 @@
 #include <string>
 #include "request_queue.h"
 #include "paginator.h"
-
 using namespace std;
-
-
-
 
 int main() {
     SearchServer search_server("and in at"s);
