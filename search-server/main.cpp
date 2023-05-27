@@ -2,6 +2,7 @@
 #include <string>
 #include "request_queue.h"
 #include "paginator.h"
+#include "search_server.h"
 
 int main() {
     SearchServer search_server(std::string("and in at"));

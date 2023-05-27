@@ -1,4 +1,5 @@
 #include "document.h"
+#include <string>
 
 Document::Document(int id, double relevance, int rating)
     : id(id)
