@@ -1,3 +1,5 @@
+#pragma once
+#include "search_server.h"
 #include <string>
 #include <deque>
 #include "document.h"
@@ -6,7 +8,7 @@
 class RequestQueue {
 public:
     explicit RequestQueue(const SearchServer& search_server)
-        : search_server_(search_server) {
+    : search_server_(search_server) {
         // напишите реализацию
     }
     // сделаем "обёртки" для всех методов поиска, чтобы сохранять результаты для нашей статистики
@@ -29,8 +31,7 @@ public:
         if (!result.empty()) {
             q.IsEmpty = false;
             requests_.push_back(q);
-        }
-        else {
+        } else {
             q.IsEmpty = true;
             requests_.push_back(q);
             empty_requests_.push_back(q);
@@ -48,7 +49,7 @@ private:
     std::deque<QueryResult> requests_;
     std::deque<QueryResult> empty_requests_;
     const static int min_in_day_ = 1440;
-    int time_counter = 0;
+    int time_counter=0;
     const SearchServer& search_server_;
     // возможно, здесь вам понадобится что-то ещё
 };
