@@ -8,8 +8,7 @@
 class RequestQueue {
 public:
     explicit RequestQueue(const SearchServer& search_server)
-    : search_server_(search_server) {
-        // напишите реализацию
+    : search_server_(search_server) {       
     }
     // сделаем "обёртки" для всех методов поиска, чтобы сохранять результаты для нашей статистики
     template <typename DocumentPredicate>
@@ -44,12 +43,11 @@ public:
 private:
     struct QueryResult {
         bool IsEmpty;
-        int time; // определите, что должно быть в структуре
+        int time; 
     };
     std::deque<QueryResult> requests_;
     std::deque<QueryResult> empty_requests_;
     const static int min_in_day_ = 1440;
-    int time_counter=0;
+    uint64_t time_counter=0;
     const SearchServer& search_server_;
-    // возможно, здесь вам понадобится что-то ещё
 };
