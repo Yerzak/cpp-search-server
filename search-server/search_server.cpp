@@ -106,7 +106,7 @@ void SearchServer::RemoveDocument(int document_id) {
     documents_.erase(document_id);
     id_to_word_freqs_.erase(document_id);
     document_ids_.erase(document_id);
-}//один запрос обрабатывается слишком долго, и распараллелить нужно его реализацию
+}
 
 void SearchServer::RemoveDocument(const std::execution::sequenced_policy&, int document_id) {
     RemoveDocument(document_id);
