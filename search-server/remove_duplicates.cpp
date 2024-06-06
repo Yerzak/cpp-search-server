@@ -25,14 +25,3 @@ void RemoveDuplicates(SearchServer& search_server){
         search_server.RemoveDocument(id);
     }
 }
-//не та выдача результатов, т.к. идем по id_to_word_freqs_, отсортированному по строкам
-//надо использовать GetWordFrequencies
-/*Ожидаемый вывод программы:
-Before duplicates removed: 9
-Found duplicate document id 3
-Found duplicate document id 4
-Found duplicate document id 5
-Found duplicate document id 7
-After duplicates removed: 5 */
-//почему 6-й документ не удаляется??
-//может он криво добавляется??
